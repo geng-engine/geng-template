@@ -2,7 +2,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     systems.url = "github:nix-systems/default";
-    geng.url = "github:geng-engine/cargo-geng";
+    geng.url = "github:geng-engine/cargo-geng/e5ed1324056150c2768dfb239c0ee79244a11fc2";
     geng.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs = { geng, nixpkgs, systems, ... }:
@@ -23,6 +23,11 @@
             target.android.enable = true;
             target.windows.enable = true;
             target.web.enable = true;
+            packages = with pkgs; [
+              just
+              bacon
+              cargo-flamegraph
+            ];
           };
         });
       formatter = forEachSystem (system: pkgs: pkgs.nixpkgs-fmt);
