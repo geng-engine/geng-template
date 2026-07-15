@@ -6,7 +6,6 @@ use crate::{
 
 use geng::prelude::*;
 
-#[allow(dead_code)]
 pub struct Game {
     context: Context,
     post: PostRender,
@@ -48,7 +47,9 @@ impl geng::State for Game {
     fn handle_event(&mut self, _event: geng::Event) {}
 
     fn update(&mut self, delta_time: f64) {
-        let delta_time = FloatTime::new(delta_time as _);
+        let delta_time = delta_time as f32;
+        self.context.update(delta_time);
+        let delta_time = FloatTime::new(delta_time);
         self.model.update(delta_time);
     }
 }

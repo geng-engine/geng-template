@@ -55,45 +55,35 @@ impl Default for GraphicsCrtOptions {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
-#[serde(default)]
-pub struct GraphicsColorsOptions {
-    pub blue: f32,
-    pub saturation: f32,
-}
-
-impl Default for GraphicsColorsOptions {
-    fn default() -> Self {
-        Self {
-            blue: 1.0,
-            saturation: 1.0,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(default)]
 pub struct VolumeOptions {
-    /// Volume in range `0..=100`.
-    pub master: f32, // TODO: range should be part of the type
+    /// Volume in range `0.0..=1.0`.
+    pub volume_master: f32, // TODO: range should be part of the type
+    pub volume_music: f32,
+    pub volume_sfx: f32,
 }
 
 impl VolumeOptions {
     pub fn master(&self) -> f32 {
-        self.master / 100.0
+        self.volume_master
     }
 
     pub fn music(&self) -> f32 {
-        self.master()
+        self.master() * self.volume_music / 100.0
     }
 
     pub fn sfx(&self) -> f32 {
-        self.master()
+        self.master() * self.volume_sfx / 100.0
     }
 }
 
 impl Default for VolumeOptions {
     fn default() -> Self {
-        Self { master: 50.0 }
+        Self {
+            volume_master: 0.5,
+            volume_music: 1.0,
+            volume_sfx: 1.0,
+        }
     }
 }

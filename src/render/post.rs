@@ -76,6 +76,7 @@ impl PostRender {
         buffer
     }
 
+    #[allow(dead_code)]
     pub fn continu(&'_ mut self) -> ugli::Framebuffer<'_> {
         geng_utils::texture::attach_texture(&mut self.swap_buffer.1, self.context.geng.ugli())
     }
