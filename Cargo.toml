@@ -8,7 +8,9 @@ wasm-bindgen = { version = "=0.2.106", features = ["serde"] } # NOTE locks the v
 
 [dependencies]
 geng = "0.18"
-geng-utils = { git = "https://github.com/Nertsal/geng-utils", rev = "1c3b0ef88fc85bbc36b04be3583bfa0b857cca67" }
+geng-utils = { git = "https://github.com/Nertsal/geng-utils", rev = "6308df54b8437c0368b7c5f0c3d2cf33279797d3" }
+async-compat = "0.2"
+serde = { version = "1", features = ["derive"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen.workspace = true

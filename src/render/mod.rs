@@ -1,18 +1,18 @@
-use crate::{assets::Assets, model::*};
+pub mod post;
 
-use geng::prelude::*;
+use crate::{model::*, prelude::*};
+
+pub const BACKGROUND_COLOR: Color = Color::BLACK;
 
 #[allow(dead_code)]
 pub struct GameRender {
-    geng: Geng,
-    assets: Rc<Assets>,
+    context: Context,
 }
 
 impl GameRender {
-    pub fn new(geng: &Geng, assets: &Rc<Assets>) -> Self {
+    pub fn new(context: &Context) -> Self {
         Self {
-            geng: geng.clone(),
-            assets: assets.clone(),
+            context: context.clone(),
         }
     }
 

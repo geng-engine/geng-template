@@ -2076,8 +2076,10 @@ dependencies = [
 [[package]]
 name = "geng-utils"
 version = "0.4.0"
-source = "git+https://github.com/Nertsal/geng-utils?rev=1c3b0ef88fc85bbc36b04be3583bfa0b857cca67#1c3b0ef88fc85bbc36b04be3583bfa0b857cca67"
+source = "git+https://github.com/Nertsal/geng-utils?rev=6308df54b8437c0368b7c5f0c3d2cf33279797d3#6308df54b8437c0368b7c5f0c3d2cf33279797d3"
 dependencies = [
+ "async-compat",
+ "async-executor",
  "geng",
  "image",
  "serde",
@@ -2131,8 +2133,10 @@ dependencies = [
 name = "geng_template"
 version = "0.1.0"
 dependencies = [
+ "async-compat",
  "geng",
  "geng-utils",
+ "serde",
  "wasm-bindgen",
 ]
 

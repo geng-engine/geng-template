@@ -2,12 +2,16 @@ mod logic;
 
 use geng::prelude::*;
 
-pub type Time = R32;
+pub type FloatTime = R32;
 
-pub struct Model {}
+pub struct Model {
+    pub real_time: FloatTime,
+}
 
 impl Model {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            real_time: FloatTime::ZERO,
+        }
     }
 }
