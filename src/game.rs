@@ -14,12 +14,12 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(context: &Context) -> Self {
+    pub fn new(context: Context) -> Self {
         log::info!("Game started!");
         Self {
             context: context.clone(),
-            post: PostRender::new(context),
-            render: GameRender::new(context),
+            post: PostRender::new(&context),
+            render: GameRender::new(context.clone()),
             model: Model::new(),
         }
     }

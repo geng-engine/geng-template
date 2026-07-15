@@ -106,7 +106,7 @@ async fn geng_main(geng: Geng, opts: Opts) -> anyhow::Result<()> {
         .ok_or_else(|| anyhow::Error::msg("loading screen failed"))??;
 
     // Run game
-    let state = game::Game::new(&context);
+    let state = game::Game::new(context);
     geng.run_state(state).await;
 
     Ok(())

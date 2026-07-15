@@ -1,4 +1,7 @@
 pub mod post;
+pub mod util;
+
+use self::util::UtilRender;
 
 use crate::{model::*, prelude::*};
 
@@ -7,12 +10,14 @@ pub const BACKGROUND_COLOR: Color = Color::BLACK;
 #[allow(dead_code)]
 pub struct GameRender {
     context: Context,
+    util: UtilRender,
 }
 
 impl GameRender {
-    pub fn new(context: &Context) -> Self {
+    pub fn new(context: Context) -> Self {
         Self {
             context: context.clone(),
+            util: UtilRender::new(context.clone()),
         }
     }
 
