@@ -15,6 +15,12 @@ pub struct LoadingAssets {
 #[derive(geng::asset::Load)]
 pub struct Assets {
     pub shaders: Shaders,
+    pub fonts: Fonts,
+}
+
+#[derive(geng::asset::Load)]
+pub struct Fonts {
+    pub default: Rc<geng::Font>,
 }
 
 #[derive(geng::asset::Load)]

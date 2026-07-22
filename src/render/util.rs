@@ -2,12 +2,16 @@
 
 use super::*;
 
+use geng::Font;
+
 #[derive(Debug, Clone, Copy)]
 pub struct TextRenderOptions {
     pub size: f32,
     pub align: vec2<f32>,
     pub color: Color,
     pub rotation: Angle,
+    /// Extra space between lines, measured relative to the font size.
+    pub line_spacing: f32,
 }
 
 impl TextRenderOptions {
@@ -35,6 +39,7 @@ impl Default for TextRenderOptions {
             align: vec2::splat(0.5),
             color: Color::WHITE,
             rotation: Angle::ZERO,
+            line_spacing: 0.0,
         }
     }
 }
@@ -257,124 +262,143 @@ impl UtilRender {
         //     .textured_quad(framebuffer, camera, pos, texture, color);
     }
 
-    // pub fn draw_text(
-    //     &self,
-    //     text: impl AsRef<str>,
-    //     position: vec2<impl Float>,
-    //     font: &Font,
-    //     options: TextRenderOptions,
-    //     camera: &impl geng::AbstractCamera2d,
-    //     framebuffer: &mut ugli::Framebuffer,
-    // ) {
-    //     self.draw_text_with(
-    //         text,
-    //         position,
-    //         0.0,
-    //         font,
-    //         options,
-    //         ugli::DrawParameters {
-    //             blend_mode: Some(ugli::BlendMode::straight_alpha()),
-    //             ..default()
-    //         },
-    //         camera,
-    //         framebuffer,
-    //     )
+    // pub fn measure_text(&self, text: impl AsRef<str>, position:vec2<impl Float>, options: TextRenderOptions, font:&Font) -> Aabb2<f32> {
+    //     let align = ;
+    //     let measure = font.measure(text, align).unwrap_or(Aabb2::ZERO);
     // }
 
-    // #[allow(clippy::too_many_arguments)]
-    // pub fn draw_text_with(
-    //     &self,
-    //     text: impl AsRef<str>,
-    //     position: vec2<impl Float>,
-    //     z_index: f32,
-    //     font: &Font,
-    //     mut options: TextRenderOptions,
-    //     params: ugli::DrawParameters,
-    //     camera: &impl geng::AbstractCamera2d,
-    //     framebuffer: &mut ugli::Framebuffer,
-    // ) {
-    //     let text = text.as_ref();
-    //     let framebuffer_size = framebuffer.size().as_f32();
+    pub fn draw_text(
+        &self,
+        text: impl AsRef<str>,
+        position: vec2<impl Float>,
+        font: &Font,
+        options: TextRenderOptions,
+        camera: &impl geng::AbstractCamera2d,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        self.draw_text_with(
+            text,
+            position,
+            font,
+            options,
+            ugli::DrawParameters {
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
+                ..default()
+            },
+            camera,
+            framebuffer,
+        )
+    }
 
-    //     let position = position.map(Float::as_f32);
-    //     let position = crate::util::world_to_screen(camera, framebuffer_size, position);
+    #[allow(clippy::too_many_arguments)]
+    pub fn draw_text_with(
+        &self,
+        text: impl AsRef<str>,
+        position: vec2<impl Float>,
+        font: &Font,
+        mut options: TextRenderOptions,
+        params: ugli::DrawParameters,
+        camera: &impl geng::AbstractCamera2d,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        let text = text.as_ref();
+        let framebuffer_size = framebuffer.size().as_f32();
 
-    //     let scale = crate::util::world_to_screen(
-    //         camera,
-    //         framebuffer_size,
-    //         vec2::splat(std::f32::consts::FRAC_1_SQRT_2),
-    //     ) - crate::util::world_to_screen(camera, framebuffer_size, vec2::ZERO);
-    //     options.size *= scale.len();
-    //     let font_size = options.size;
+        let position = position.map(Float::as_f32);
+        let position = camera
+            .world_to_screen(framebuffer_size, position)
+            .unwrap_either();
 
-    //     let mut position = position;
-    //     for line in text.lines() {
-    //         let measure = font.measure(line, font_size);
-    //         let size = measure.size();
-    //         let align = size * (options.align - vec2::splat(0.5)); // Centered by default
-    //         let descent = -font.descent() * font_size;
-    //         let align = vec2(
-    //             measure.center().x + align.x,
-    //             descent + (measure.max.y - descent) * options.align.y,
-    //         );
+        let scale = camera
+            .world_to_screen(
+                framebuffer_size,
+                vec2::splat(std::f32::consts::FRAC_1_SQRT_2),
+            )
+            .unwrap_either()
+            - camera
+                .world_to_screen(framebuffer_size, vec2::ZERO)
+                .unwrap_either();
+        options.size *= scale.len();
+        let font_size = options.size;
 
-    //         let transform = mat3::translate(position)
-    //             * mat3::rotate(options.rotation)
-    //             * mat3::translate(-align);
+        let line_height = font_size;
+        let line_spacing = options.line_spacing * font_size;
+        let lines = text.lines().count();
+        let height_align = line_height * lines.saturating_sub(1) as f32
+            + line_spacing * lines.saturating_sub(2) as f32;
+        let total_vertical_alignment = height_align * (1.0 - options.align.y);
 
-    //         font.draw_with(
-    //             framebuffer,
-    //             line,
-    //             z_index,
-    //             font_size,
-    //             options.color,
-    //             transform,
-    //             params.clone(),
-    //         );
-    //         position.y -= options.size; // NOTE: larger than text size to space out better
-    //     }
-    // }
+        let mut position = position + vec2(0.0, total_vertical_alignment);
+        for line in text.lines() {
+            let measure = font
+                .measure(line, vec2::splat(geng::TextAlign::CENTER))
+                .unwrap_or(Aabb2::ZERO);
+            let size = measure.size() * font_size;
 
-    // pub fn draw_text_fit(
-    //     &self,
-    //     text: impl AsRef<str>,
-    //     target: Aabb2<f32>,
-    //     font: &Font,
-    //     mut options: TextRenderOptions,
-    //     camera: &impl geng::AbstractCamera2d,
-    //     framebuffer: &mut ugli::Framebuffer,
-    // ) {
-    //     let text = text.as_ref();
-    //     let measure = font.measure(text, 1.0);
+            // default alignment is (0.0, 1.0)
+            let align = vec2(options.align.x, 1.0 - options.align.y);
+            let descent = -font.descender() * font_size;
+            let ascent = font.ascender() * font_size;
+            let align = vec2(size.x, descent - ascent) * align;
 
-    //     let max_size = target.size();
-    //     let right = vec2(max_size.x, 0.0).rotate(options.rotation).x;
-    //     let left = vec2(0.0, max_size.y).rotate(options.rotation).x;
-    //     let width = if left.signum() != right.signum() {
-    //         left.abs() + right.abs()
-    //     } else {
-    //         left.abs().max(right.abs())
-    //     };
+            let transform = mat3::translate(position)
+                * mat3::rotate(options.rotation)
+                * mat3::translate(-align)
+                * mat3::scale_uniform(font_size);
 
-    //     let max_height = max_size.y * 0.9;
-    //     let max_width = width * 0.85; // Leave some space TODO: move into a parameter or smth
-    //     let max_size = max_width / measure.width();
-    //     let size = options.size.min(max_size).min(max_height);
+            font.draw(
+                framebuffer,
+                &geng::PixelPerfectCamera,
+                line,
+                vec2(0.0, 0.5).map(geng::TextAlign),
+                transform,
+                options.color,
+            );
+            position.y -= line_height + line_spacing;
+        }
+    }
 
-    //     options.size = size;
+    pub fn draw_text_fit(
+        &self,
+        text: impl AsRef<str>,
+        target: Aabb2<f32>,
+        font: &Font,
+        mut options: TextRenderOptions,
+        camera: &impl geng::AbstractCamera2d,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        let text = text.as_ref();
+        let measure = font
+            .measure(text, vec2::splat(geng::TextAlign::CENTER))
+            .unwrap_or(Aabb2::ZERO);
 
-    //     self.draw_text_with(
-    //         text,
-    //         target.align_pos(options.align),
-    //         0.0,
-    //         font,
-    //         options,
-    //         ugli::DrawParameters {
-    //             blend_mode: Some(ugli::BlendMode::straight_alpha()),
-    //             ..default()
-    //         },
-    //         camera,
-    //         framebuffer,
-    //     );
-    // }
+        let max_size = target.size();
+        let right = vec2(max_size.x, 0.0).rotate(options.rotation).x;
+        let left = vec2(0.0, max_size.y).rotate(options.rotation).x;
+        let width = if left.signum() != right.signum() {
+            left.abs() + right.abs()
+        } else {
+            left.abs().max(right.abs())
+        };
+
+        let max_height = max_size.y * 0.9;
+        let max_width = width; // * 0.85; // Leave some space TODO: move into a parameter or smth
+        let max_size = max_width / measure.width();
+        let size = options.size.min(max_size).min(max_height);
+
+        options.size = size;
+
+        self.draw_text_with(
+            text,
+            target.align_pos(options.align),
+            font,
+            options,
+            ugli::DrawParameters {
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
+                ..default()
+            },
+            camera,
+            framebuffer,
+        );
+    }
 }

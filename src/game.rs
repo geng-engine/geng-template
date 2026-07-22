@@ -1,10 +1,8 @@
 use crate::{
-    context::Context,
     model::*,
+    prelude::*,
     render::{GameRender, post::PostRender},
 };
-
-use geng::prelude::*;
 
 pub struct Game {
     context: Context,
@@ -33,6 +31,84 @@ impl geng::State for Game {
             .begin(screen_buffer.size(), crate::render::BACKGROUND_COLOR);
 
         self.render.draw(&self.model, framebuffer);
+
+        // Font test
+        let font = &*self.context.assets.fonts.default;
+        let align = vec2(0.5, 0.5);
+
+        // Regular rendering - Single line
+        self.render.util.draw_text(
+            "Simple text rendering",
+            vec2(-7.0, 7.0),
+            font,
+            crate::render::util::TextRenderOptions::new(1.0).align(align),
+            &self.model.camera,
+            framebuffer,
+        );
+        self.context.geng.draw2d().circle(
+            framebuffer,
+            &self.model.camera,
+            vec2(-7.0, 7.0),
+            0.05,
+            Color::RED,
+        );
+        // Regular rendering - Double line
+        self.render.util.draw_text(
+            "Multiline text rendering\nSecond line",
+            vec2(7.0, 7.0),
+            font,
+            crate::render::util::TextRenderOptions::new(1.0).align(align),
+            &self.model.camera,
+            framebuffer,
+        );
+        self.context.geng.draw2d().circle(
+            framebuffer,
+            &self.model.camera,
+            vec2(7.0, 7.0),
+            0.05,
+            Color::RED,
+        );
+
+        // Fit into target aabb - Single line
+        let target = Aabb2::point(vec2(-7.0, 3.0)).extend_symmetric(vec2(5.0, 2.0) / 2.0);
+        self.render
+            .util
+            .draw_quad(target, Color::BLUE, &self.model.camera, framebuffer);
+        self.render.util.draw_text_fit(
+            "This single line is fit into an AABB",
+            target,
+            font,
+            crate::render::util::TextRenderOptions::new(1.0).align(align),
+            &self.model.camera,
+            framebuffer,
+        );
+        self.context.geng.draw2d().circle(
+            framebuffer,
+            &self.model.camera,
+            target.center(),
+            0.05,
+            Color::RED,
+        );
+        // Fit into target aabb - Double line
+        let target = Aabb2::point(vec2(7.0, 3.0)).extend_symmetric(vec2(5.0, 2.0) / 2.0);
+        self.render
+            .util
+            .draw_quad(target, Color::BLUE, &self.model.camera, framebuffer);
+        self.render.util.draw_text_fit(
+            "This text is fit into an AABB\nWith multiple lines!",
+            target,
+            font,
+            crate::render::util::TextRenderOptions::new(1.0).align(align),
+            &self.model.camera,
+            framebuffer,
+        );
+        self.context.geng.draw2d().circle(
+            framebuffer,
+            &self.model.camera,
+            target.center(),
+            0.05,
+            Color::RED,
+        );
 
         self.post.post_process(
             &self.context.get_options(),

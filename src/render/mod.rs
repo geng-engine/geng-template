@@ -9,8 +9,8 @@ pub const BACKGROUND_COLOR: Color = Color::BLACK;
 
 #[allow(dead_code)]
 pub struct GameRender {
-    context: Context,
-    util: UtilRender,
+    pub context: Context,
+    pub util: UtilRender,
 }
 
 impl GameRender {
