@@ -277,7 +277,7 @@ impl UtilRender {
         framebuffer: &mut ugli::Framebuffer,
     ) {
         self.draw_text_with(
-            text,
+            &[text],
             position,
             font,
             options,
@@ -293,7 +293,7 @@ impl UtilRender {
     #[allow(clippy::too_many_arguments)]
     pub fn draw_text_with(
         &self,
-        text: impl AsRef<str>,
+        text_lines: &[impl AsRef<str>],
         position: vec2<impl Float>,
         font: &Font,
         mut options: TextRenderOptions,
@@ -301,7 +301,6 @@ impl UtilRender {
         camera: &impl geng::AbstractCamera2d,
         framebuffer: &mut ugli::Framebuffer,
     ) {
-        let text = text.as_ref();
         let framebuffer_size = framebuffer.size().as_f32();
 
         let position = position.map(Float::as_f32);
@@ -323,13 +322,16 @@ impl UtilRender {
 
         let line_height = font_size;
         let line_spacing = options.line_spacing * font_size;
-        let lines = text.lines().count();
+        let lines: usize = text_lines
+            .iter()
+            .map(|line| line.as_ref().lines().count())
+            .sum();
         let height_align = line_height * lines.saturating_sub(1) as f32
             + line_spacing * lines.saturating_sub(2) as f32;
         let total_vertical_alignment = height_align * (1.0 - options.align.y);
 
         let mut position = position + vec2(0.0, total_vertical_alignment);
-        for line in text.lines() {
+        for line in text_lines.iter().flat_map(|line| line.as_ref().lines()) {
             let measure = font
                 .measure(line, vec2::splat(geng::TextAlign::CENTER))
                 .unwrap_or(Aabb2::ZERO);
@@ -389,7 +391,42 @@ impl UtilRender {
         options.size = size;
 
         self.draw_text_with(
-            text,
+            &[text],
+            target.align_pos(options.align),
+            font,
+            options,
+            ugli::DrawParameters {
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
+                ..default()
+            },
+            camera,
+            framebuffer,
+        );
+    }
+
+    pub fn draw_text_wrap(
+        &self,
+        text: impl AsRef<str>,
+        target: Aabb2<f32>,
+        font: &Font,
+        options: TextRenderOptions,
+        camera: &impl geng::AbstractCamera2d,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        let text = text.as_ref();
+        let max_size = target.size();
+        let right = vec2(max_size.x, 0.0).rotate(options.rotation).x;
+        let left = vec2(0.0, max_size.y).rotate(options.rotation).x;
+        let width = if left.signum() != right.signum() {
+            left.abs() + right.abs()
+        } else {
+            left.abs().max(right.abs())
+        };
+
+        let max_width = width;
+        let lines = crate::util::wrap_text(font, text, max_width / options.size);
+        self.draw_text_with(
+            &lines,
             target.align_pos(options.align),
             font,
             options,

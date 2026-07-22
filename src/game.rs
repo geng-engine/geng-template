@@ -110,6 +110,27 @@ impl geng::State for Game {
             Color::RED,
         );
 
+        // Wrapped text rendering
+        let target = Aabb2::point(vec2(0.0, -2.0)).extend_symmetric(vec2(8.0, 4.0) / 2.0);
+        self.render
+            .util
+            .draw_quad(target, Color::BLUE, &self.model.camera, framebuffer);
+        self.render.util.draw_text_wrap(
+            "This text is automatically wrapped into multiple lines inside this AABB\nAnd manual line breaks also work!",
+            target,
+            font,
+            crate::render::util::TextRenderOptions::new(0.6).align(align),
+            &self.model.camera,
+            framebuffer,
+        );
+        self.context.geng.draw2d().circle(
+            framebuffer,
+            &self.model.camera,
+            target.center(),
+            0.05,
+            Color::RED,
+        );
+
         self.post.post_process(
             &self.context.get_options(),
             crate::render::post::PostVfx {
